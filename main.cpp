@@ -14,9 +14,9 @@ void sb(uint32_t address, int32_t kte, int8_t dado);
 
 void init() {
 
-};
+}
 
-void fetch(instruction_context_st& ic) {
+void fetch (instruction_context_st& ic) {
     ri = lw(pc, 0); //carrega instrução endereçada pelo pc
     pc = pc + 4;                //aponta para a próxima instrução
 }
@@ -57,6 +57,52 @@ void decode (instruction_context_st& ic) {
     ic.imm13 = imm13;
     ic.imm21 = imm21;
     ic.imm20_u = imm20_u;
+}
+
+INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
+
+}
+
+FORMATS get_i_format(uint32_t opcode, uint32_t func3, uint32_t func7) {
+    switch (opcode) {
+        case RegType:
+            return RType;
+        case ILType:
+        case ILAType:
+            return IType;
+        case StoreType:
+            return SType;
+        case BType:
+            return SBType;
+        case LUI:
+        case AUIPC:
+            return UType;
+        case JAL:
+        case JALR:
+            return UJType;
+        case ECALL:
+            return NullFormat;
+    }
+
+
+}
+
+void dump_mem(int start_byte, int end_byte, char format) {
+
+}
+
+void execute (instruction_context_st& ic) {
+    switch (ic.ins_format)
+        case RType:
+            switch (ic.ins_code)
+
+        case IType:
+        case SType:
+        case SBType:
+        case UType:
+        case UJType:
+        case NullFormat:
+        case NOPType:
 }
 
 int32_t lw(uint32_t address, int32_t kte) {
