@@ -190,24 +190,104 @@ void decode (instruction_context_st& ic) {
     ic.imm20_u = imm20_u;
 }
 
-void dump_mem(int start_byte, int end_byte, char format) {
-
-}
-
 void execute (instruction_context_st& ic) {
     breg[ZERO] = 0;
 
     switch (ic.ins_code) {
         case I_add:
-        case I_addi: case I_and,  case I_andi, case I_auipc,
-        case I_beq,	case I_bge,	case I_bgeu, case I_blt,  case I_bltu,
-        case I_bne,  case I_jal,	case I_jalr, case I_lb,	case I_lbu,
-        case I_lw,   case I_lh,   case I_lhu,  case I_lui,  case I_sb,
-        case I_sh,   case I_sw,   case I_sll,  case I_slt,  case I_slli,
-        case I_srl,  case I_sra,  case I_sub,  case I_slti, case I_sltiu,
-        case I_xor,	case I_or,	case I_srli, case I_srai,  case I_sltu,
-        case I_ori, case I_ecall, case I_xori, case I_nop
+            breg[rd] = breg[rs1] + breg[rs2];
+        case I_addi:
+            breg[rd] = breg[rs1] + ic.imm12_i;
+        case I_and:
+            breg[rd] = breg[rs1] & breg[rs2];
+        case I_andi:
+            breg[rd] = breg[rs1] & ic.imm12_i;
+        case I_auipc:
+            breg[rd] = pc + sebregt(ic.imm20_u << 12);
+        case I_beq:
+            if (rs1 == rs2) pc += sebregt(offset);
+        case I_bge:
+            if (rs1 >=s rs2) pc += sebregt(offset);
+        case I_bgeu:
+            if (rs1 >=u rs2) pc += sebregt(offset);
+        case I_blt:
+            if (rs1 <s rs2) pc += sebregt(offset);
+        case I_bltu:
+            if (rs1 >u rs2) pc += sebregt(offset);
+        case I_bne:
+            if (rs1 != rs2) pc += sebregt(offset);
+        case I_jal:
+            breg[rd] = pc+4; pc += sebregt(offset);
+        case I_jalr:
+            t =pc+4; pc=(breg[rs1]+sebregt(offset))&∼1; breg[rd]=t;
+        case I_lb:
+            t =pc+4; pc=(breg[rs1]+sebregt(offset))&∼1; breg[rd]=t;
+        case I_lbu:
+            breg[rd] = M[breg[rs1] + sebregt(offset)][7:0];
+        case I_lw:
+            breg[rd] = sebregt(M[breg[rs1] + sebregt(offset)][31:0]);
+        case I_lh:
+            breg[rd] = sebregt(M[breg[rs1] + sebregt(offset)][15:0]);
+        case I_lhu:
+            breg[rd] = M[breg[rs1] + sebregt(offset)][15:0];
+        case I_lui:
+            breg[rd] = sebregt(immediate[31:12] << 12);
+        case I_sb:
+            M[breg[rs1] + sebregt(offset)] = breg[rs2][7:0];
+        case I_sh:
+            M[breg[rs1] + sebregt(offset)] = breg[rs2][15:0];
+        case I_sw:
+            M[breg[rs1] + sebregt(offset)] = breg[rs2][31:0];
+        case I_sll:
+            breg[rd] = breg[rs1] << breg[rs2];
+        case I_slt:
+            breg[rd] = breg[rs1] <s breg[rs2];
+        case I_slli:
+            breg[rd] = breg[rs1] << shamt;
+        case I_srl:
+            breg[rd] = breg[rs1] >>u breg[rs2];
+        case I_sra:
+            breg[rd] = breg[rs1] >>s breg[rs2];
+        case I_sub:
+            breg[rd] = breg[rs1] - breg[rs2];
+        case I_slti:
+            breg[rd] = breg[rs1] <s sebregt(immediate);
+        case I_sltiu:
+            breg[rd] = breg[rs1] <u sebregt(immediate);
+        case I_xor:
+            breg[rd] = breg[rs1] ^ breg[rs2];
+        case I_or:
+            breg[rd] = breg[rs1] | breg[rs2];
+        case I_srli:
+            breg[rd] = breg[rs1] >>u shamt;
+        case I_srai:
+            breg[rd] = breg[rs1] >>s shamt;
+        case I_sltu:
+            breg[rd] = breg[rs1] <u breg[rs2];
+        case I_ori:
+            breg[rd] = breg[rs1] | sebregt(immediate);
+        case I_ecall:
+            RaiseEbregception(EnvironmentCall);
+        case I_xori:
+            breg[rd] = breg[rs1] ^ sebregt(immediate);
+        //case I_nop:
     }
+}
+
+void step() {
+
+}
+
+void run() {
+
+}
+
+void dump_mem(int start_byte, int end_byte, char format) {
+
+}
+
+void dump_reg(char format) {
+
 }
 
 int32_t lw(uint32_t address, int32_t kte) {
