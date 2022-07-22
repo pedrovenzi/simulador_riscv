@@ -16,8 +16,139 @@ void init() {
 
 }
 
+INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
+    switch (opcode) {
+        case RegType:
+            switch (func3) {
+                case ADDSUB3:
+                    switch (func7) {
+                        case ADD7:
+                            return I_add;
+                        case SUB7:
+                            return I_sub;
+                    }
+                case SLL3:
+                    return I_sll;
+                case SLT3:
+                    return I_slt;
+                case SLTU3:
+                    return I_sltu;
+                case XOR3:
+                    return I_xor;
+                case SR3:
+                    switch (func7) {
+                        case SRA7:
+                            return I_sra;
+                        case SRL7:
+                            return I_srl;
+                    }
+                case OR3:
+                    return I_or;
+                case AND3:
+                    return I_and;
+            }
+        case ILType:
+            switch (func3) {
+                case LB3:
+                    return I_lb;
+                case LH3:
+                    return I_lh;
+                case LW3:
+                    return I_lw;
+                case LBU3:
+                    return I_lbu;
+                case LHU3:
+                    return I_lhu;
+            }
+        case ILAType:
+            switch (func3) {
+                case ADDI3:
+                    return I_addi;
+                case SLTI3:
+                    return I_slti;
+                case SLTIU3:
+                    return I_sltiu;
+                case XORI3:
+                    return I_xori;
+                case ORI3:
+                    return I_ori;
+                case ANDI3:
+                    return I_andi;
+                case SLLI3:
+                    return I_slli;
+                case SRI3:
+                    switch (func7) {
+                        case SRLI7:
+                            return I_srli;
+                        case SRAI7:
+                            return I_srai;
+                    }
+            }
+        case StoreType:
+            switch (func3) {
+                case SB3:
+                    return I_sb;
+                case SH3:
+                    return I_sh;
+                case SW3:
+                    return I_sw;
+            }
+        case BType:
+            switch (func3) {
+                case BEQ3:
+                    return I_beq;
+                case BNE3:
+                    return I_bne;
+                case BLT3:
+                    return I_blt;
+                case BGE3:
+                    return I_bge;
+                case BLTU3:
+                    return I_bltu;
+                case BGEU3:
+                    return I_bgeu;
+            }
+        case LUI:
+            return I_lui;
+        case AUIPC:
+            return I_auipc;
+        case JAL:
+            return I_jal;
+        case JALR:
+            return I_jalr;
+        case ECALL:
+            return I_ecall;
+    }
+
+
+}
+
+FORMATS get_i_format(uint32_t opcode, uint32_t func3, uint32_t func7) {
+    switch (opcode) {
+        case RegType:
+            return RType;
+        case ILType:
+        case ILAType:
+            return IType;
+        case StoreType:
+            return SType;
+        case BType:
+            return SBType;
+        case LUI:
+        case AUIPC:
+            return UType;
+        case JAL:
+        case JALR:
+            return UJType;
+        case ECALL:
+            return NullFormat;
+    }
+
+}
+
 void fetch (instruction_context_st& ic) {
     ri = lw(pc, 0); //carrega instrução endereçada pelo pc
+    ic.pc = pc;
     pc = pc + 4;                //aponta para a próxima instrução
 }
 
@@ -59,50 +190,24 @@ void decode (instruction_context_st& ic) {
     ic.imm20_u = imm20_u;
 }
 
-INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
-
-}
-
-FORMATS get_i_format(uint32_t opcode, uint32_t func3, uint32_t func7) {
-    switch (opcode) {
-        case RegType:
-            return RType;
-        case ILType:
-        case ILAType:
-            return IType;
-        case StoreType:
-            return SType;
-        case BType:
-            return SBType;
-        case LUI:
-        case AUIPC:
-            return UType;
-        case JAL:
-        case JALR:
-            return UJType;
-        case ECALL:
-            return NullFormat;
-    }
-
-
-}
-
 void dump_mem(int start_byte, int end_byte, char format) {
 
 }
 
 void execute (instruction_context_st& ic) {
-    switch (ic.ins_format)
-        case RType:
-            switch (ic.ins_code)
+    breg[ZERO] = 0;
 
-        case IType:
-        case SType:
-        case SBType:
-        case UType:
-        case UJType:
-        case NullFormat:
-        case NOPType:
+    switch (ic.ins_code) {
+        case I_add:
+        case I_addi: case I_and,  case I_andi, case I_auipc,
+        case I_beq,	case I_bge,	case I_bgeu, case I_blt,  case I_bltu,
+        case I_bne,  case I_jal,	case I_jalr, case I_lb,	case I_lbu,
+        case I_lw,   case I_lh,   case I_lhu,  case I_lui,  case I_sb,
+        case I_sh,   case I_sw,   case I_sll,  case I_slt,  case I_slli,
+        case I_srl,  case I_sra,  case I_sub,  case I_slti, case I_sltiu,
+        case I_xor,	case I_or,	case I_srli, case I_srai,  case I_sltu,
+        case I_ori, case I_ecall, case I_xori, case I_nop
+    }
 }
 
 int32_t lw(uint32_t address, int32_t kte) {
