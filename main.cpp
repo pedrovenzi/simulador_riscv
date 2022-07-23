@@ -203,41 +203,54 @@ void execute (instruction_context_st& ic) {
         case I_andi:
             breg[rd] = breg[rs1] & ic.imm12_i;
         case I_auipc:
-            breg[rd] = pc + sebregt(ic.imm20_u << 12);
+            breg[rd] = pc + ic.imm20_u;
         case I_beq:
-            if (rs1 == rs2) pc += sebregt(offset);
+            if (rs1 == rs2) {
+                pc += sext(offset);
+            }
         case I_bge:
-            if (rs1 >=s rs2) pc += sebregt(offset);
+            if (rs1 >=s rs2){
+                pc += sext(offset);
+            }
         case I_bgeu:
-            if (rs1 >=u rs2) pc += sebregt(offset);
+            if (rs1 >=u rs2){
+                pc += sext(offset);
+            }
         case I_blt:
-            if (rs1 <s rs2) pc += sebregt(offset);
+            if (rs1 <s rs2){
+                pc += sext(offset);
+            }
         case I_bltu:
-            if (rs1 >u rs2) pc += sebregt(offset);
+            if (rs1 >u rs2){
+                pc += sext(offset);
+            }
         case I_bne:
-            if (rs1 != rs2) pc += sebregt(offset);
+            if (rs1 != rs2){
+                pc += sext(offset);
+            }
         case I_jal:
-            breg[rd] = pc+4; pc += sebregt(offset);
+            breg[rd] = pc+4;
+            pc += sext(offset);
         case I_jalr:
-            t =pc+4; pc=(breg[rs1]+sebregt(offset))&∼1; breg[rd]=t;
+            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;
         case I_lb:
-            t =pc+4; pc=(breg[rs1]+sebregt(offset))&∼1; breg[rd]=t;
+            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;
         case I_lbu:
-            breg[rd] = M[breg[rs1] + sebregt(offset)][7:0];
+            breg[rd] = M[breg[rs1] + sext(offset)][7:0];
         case I_lw:
-            breg[rd] = sebregt(M[breg[rs1] + sebregt(offset)][31:0]);
+            breg[rd] = sext(M[breg[rs1] + sext(offset)][31:0]);
         case I_lh:
-            breg[rd] = sebregt(M[breg[rs1] + sebregt(offset)][15:0]);
+            breg[rd] = sext(M[breg[rs1] + sext(offset)][15:0]);
         case I_lhu:
-            breg[rd] = M[breg[rs1] + sebregt(offset)][15:0];
+            breg[rd] = M[breg[rs1] + sext(offset)][15:0];
         case I_lui:
-            breg[rd] = sebregt(immediate[31:12] << 12);
+            breg[rd] = sext(immediate[31:12] << 12);
         case I_sb:
-            M[breg[rs1] + sebregt(offset)] = breg[rs2][7:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][7:0];
         case I_sh:
-            M[breg[rs1] + sebregt(offset)] = breg[rs2][15:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][15:0];
         case I_sw:
-            M[breg[rs1] + sebregt(offset)] = breg[rs2][31:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][31:0];
         case I_sll:
             breg[rd] = breg[rs1] << breg[rs2];
         case I_slt:
@@ -251,9 +264,9 @@ void execute (instruction_context_st& ic) {
         case I_sub:
             breg[rd] = breg[rs1] - breg[rs2];
         case I_slti:
-            breg[rd] = breg[rs1] <s sebregt(immediate);
+            breg[rd] = breg[rs1] <s sext(immediate);
         case I_sltiu:
-            breg[rd] = breg[rs1] <u sebregt(immediate);
+            breg[rd] = breg[rs1] <u sext(immediate);
         case I_xor:
             breg[rd] = breg[rs1] ^ breg[rs2];
         case I_or:
@@ -265,11 +278,11 @@ void execute (instruction_context_st& ic) {
         case I_sltu:
             breg[rd] = breg[rs1] <u breg[rs2];
         case I_ori:
-            breg[rd] = breg[rs1] | sebregt(immediate);
+            breg[rd] = breg[rs1] | sext(immediate);
         case I_ecall:
-            RaiseEbregception(EnvironmentCall);
+            RaiseException(EnvironmentCall);
         case I_xori:
-            breg[rd] = breg[rs1] ^ sebregt(immediate);
+            breg[rd] = breg[rs1] ^ sext(immediate);
         //case I_nop:
     }
 }
