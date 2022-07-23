@@ -123,29 +123,6 @@ INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
 
 }
 
-FORMATS get_i_format(uint32_t opcode, uint32_t func3, uint32_t func7) {
-    switch (opcode) {
-        case RegType:
-            return RType;
-        case ILType:
-        case ILAType:
-            return IType;
-        case StoreType:
-            return SType;
-        case BType:
-            return SBType;
-        case LUI:
-        case AUIPC:
-            return UType;
-        case JAL:
-        case JALR:
-            return UJType;
-        case ECALL:
-            return NullFormat;
-    }
-
-}
-
 void fetch (instruction_context_st& ic) {
     ri = lw(pc, 0); //carrega instrução endereçada pelo pc
     ic.pc = pc;
@@ -195,100 +172,102 @@ void execute (instruction_context_st& ic) {
 
     switch (ic.ins_code) {
         case I_add:
-            breg[rd] = breg[rs1] + breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] + breg[ic.rs2];
         case I_addi:
-            breg[rd] = breg[rs1] + ic.imm12_i;
+            breg[ic.rd] = breg[ic.rs1] + ic.imm12_i;
         case I_and:
-            breg[rd] = breg[rs1] & breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] & breg[rs2];
         case I_andi:
-            breg[rd] = breg[rs1] & ic.imm12_i;
+            breg[ic.rd] = breg[ic.rs1] & ic.imm12_i;
         case I_auipc:
-            breg[rd] = pc + ic.imm20_u;
+            breg[ic.rd] = ic.pc + ic.imm20_u;
         case I_beq:
-            if (rs1 == rs2) {
-                pc += sext(offset);
+            if (breg[ic.rs1] == breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bge:
-            if (rs1 >=s rs2){
-                pc += sext(offset);
+            if (breg[ic.rs1] >= breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bgeu:
-            if (rs1 >=u rs2){
-                pc += sext(offset);
+            if (breg[ic.rs1] >= (uint32_t)breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_blt:
-            if (rs1 <s rs2){
-                pc += sext(offset);
+            if (breg[ic.rs1] <= breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bltu:
-            if (rs1 >u rs2){
-                pc += sext(offset);
+            if (breg[ic.rs1] <= (uint32_t)breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bne:
-            if (rs1 != rs2){
-                pc += sext(offset);
+            if (breg[ic.rs1] != breg[ic.rs2]) {
+                breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_jal:
             breg[rd] = pc+4;
             pc += sext(offset);
         case I_jalr:
-            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;
+            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;//
         case I_lb:
-            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;
+            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;//
         case I_lbu:
-            breg[rd] = M[breg[rs1] + sext(offset)][7:0];
+            breg[rd] = M[breg[rs1] + sext(offset)][7:0];//
         case I_lw:
-            breg[rd] = sext(M[breg[rs1] + sext(offset)][31:0]);
+            breg[rd] = sext(M[breg[rs1] + sext(offset)][31:0]);//
         case I_lh:
-            breg[rd] = sext(M[breg[rs1] + sext(offset)][15:0]);
+            breg[rd] = sext(M[breg[rs1] + sext(offset)][15:0]);//
         case I_lhu:
-            breg[rd] = M[breg[rs1] + sext(offset)][15:0];
+            breg[rd] = M[breg[rs1] + sext(offset)][15:0];//
         case I_lui:
-            breg[rd] = sext(immediate[31:12] << 12);
+            breg[ic.rd] = ic.imm20_u;
         case I_sb:
-            M[breg[rs1] + sext(offset)] = breg[rs2][7:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][7:0];//
         case I_sh:
-            M[breg[rs1] + sext(offset)] = breg[rs2][15:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][15:0];//
         case I_sw:
-            M[breg[rs1] + sext(offset)] = breg[rs2][31:0];
+            M[breg[rs1] + sext(offset)] = breg[rs2][31:0];//
         case I_sll:
-            breg[rd] = breg[rs1] << breg[rs2];
+            breg[rd] = breg[rs1] << breg[rs2];//
         case I_slt:
-            breg[rd] = breg[rs1] <s breg[rs2];
+            breg[rd] = breg[rs1] <s breg[rs2];//
         case I_slli:
-            breg[rd] = breg[rs1] << shamt;
+            breg[ic.rd] = breg[ic.rs1] << ic.shamt;
         case I_srl:
-            breg[rd] = breg[rs1] >>u breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] >> (uint32_t)breg[ic.rs2];
         case I_sra:
-            breg[rd] = breg[rs1] >>s breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] >> breg[ic.rs2];
         case I_sub:
-            breg[rd] = breg[rs1] - breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] - breg[ic.rs2];
         case I_slti:
-            breg[rd] = breg[rs1] <s sext(immediate);
+            breg[ic.rd] = breg[ic.rs1] << ic.imm12_s;//
         case I_sltiu:
-            breg[rd] = breg[rs1] <u sext(immediate);
+            breg[ic.rd] = breg[ic.rs1] << (uint32_t)ic.imm12_s;//
         case I_xor:
-            breg[rd] = breg[rs1] ^ breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] ^ breg[ic.rs2];
         case I_or:
-            breg[rd] = breg[rs1] | breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] | breg[ic.rs2];
         case I_srli:
-            breg[rd] = breg[rs1] >>u shamt;
+            breg[ic.rd] = breg[ic.rs1] >> (uint32_t)ic.shamt;
         case I_srai:
-            breg[rd] = breg[rs1] >>s shamt;
+            breg[ic.rd] = breg[ic.rs1] >> ic.shamt;
         case I_sltu:
-            breg[rd] = breg[rs1] <u breg[rs2];
+            breg[ic.rd] = breg[ic.rs1] << (uint32_t)breg[ic.rs2];//
         case I_ori:
-            breg[rd] = breg[rs1] | sext(immediate);
+            breg[ic.rd] = breg[ic.rs1] | ic.imm12_i;
         case I_ecall:
-            RaiseException(EnvironmentCall);
+            RaiseException(EnvironmentCall);//
         case I_xori:
-            breg[rd] = breg[rs1] ^ sext(immediate);
+            breg[ic.rd] = breg[ic.rs1] ^ ic.imm12_i;//
         //case I_nop:
     }
 }
 
-void step() {
-
+void step(instruction_context_st& ic) {
+    fetch(ic);
+    decode(ic);
+    execute(ic);
 }
 
 void run() {

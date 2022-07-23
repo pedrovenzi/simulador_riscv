@@ -107,11 +107,11 @@ uint32_t pc,						// contador de programa
          gp;						// global pointer
 
 extern
-int32_t		imm12_i,				// constante 12 bits
-            imm12_s,				// constante 12 bits
+int32_t		imm12_i,				// constante 12 bits - S
+            imm12_s,				// constante 12 bits - SB
             imm13,					// constante 13 bits
-            imm20_u,				// constante 20 bis mais significativos
-            imm21;					// constante 21 bits
+            imm20_u,				// constante 20 bis mais significativos - U
+            imm21;					// constante 21 bits - UJ
 
 extern
 uint32_t	opcode,					// codigo da operacao
