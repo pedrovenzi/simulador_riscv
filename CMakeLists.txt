@@ -3,4 +3,4 @@ project(simulador_riscv)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(clion main.cpp riscv.h globals.h infix_iterator.h)
+add_executable(clion main.cpp riscv.h globals.h)

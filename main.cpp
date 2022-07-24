@@ -1,11 +1,10 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdint>
-#include <sstream>
 #include <bitset>
 #include "globals.h"
 #include "riscv.h"
-#include "infix_iterator.h"
+#include <sys/stat.h>
 
 int32_t mem[MEM_SIZE]; //4096 palavras (de 32-bits), 16384 bytes (de 8-bits)
 
@@ -15,10 +14,18 @@ int32_t lbu(uint32_t address, int32_t kte);
 void sw(uint32_t address, int32_t kte, int32_t dado);
 void sb(uint32_t address, int32_t kte, int8_t dado);
 
-std::string concat_string, data;
-std::stringstream sstream(data);
 
 void init() {
+
+    //FILE* file_bin = fopen("./code.bin", "rb");
+    //fseek(file_bin,0,SEEK_END);
+    //unsigned long size=ftell(file_bin);
+    //fseek(file_bin,0,SEEK_SET);
+
+
+    //fclose(file_bin)
+
+
 
 }
 
@@ -179,105 +186,134 @@ void execute (instruction_context_st& ic) {
     switch (ic.ins_code) {
         case I_add:
             breg[ic.rd] = breg[ic.rs1] + breg[ic.rs2];
+            break;
         case I_addi:
             breg[ic.rd] = breg[ic.rs1] + ic.imm12_i;
+            break;
         case I_and:
             breg[ic.rd] = breg[ic.rs1] & breg[rs2];
+            break;
         case I_andi:
             breg[ic.rd] = breg[ic.rs1] & ic.imm12_i;
+            break;
         case I_auipc:
             breg[ic.rd] = ic.pc + ic.imm20_u;
+            break;
         case I_beq:
             if (breg[ic.rs1] == breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_bge:
             if (breg[ic.rs1] >= breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_bgeu:
             if ((uint32_t)breg[ic.rs1] >= (uint32_t)breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_blt:
             if (breg[ic.rs1] <= breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_bltu:
             if ((uint32_t)breg[ic.rs1] <= (uint32_t)breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_bne:
             if (breg[ic.rs1] != breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
+            break;
         case I_jal:
             breg[ic.rd] = ic.pc+4;
             ic.pc += ic.imm21;
+            break;
         case I_jalr:
             temp_pc = ic.pc+4;
             ic.pc = (breg[ic.rs1] + ic.imm21);
             breg[ic.rd]=temp_pc;
+            break;
         case I_lb:
             breg[ic.rd] = lb(ic.rs1, ic.imm12_i);
+            break;
         case I_lbu:
             breg[ic.rd] = lbu(ic.rs1, ic.imm12_i);
+            break;
         case I_lw:
             breg[ic.rd] = lw(ic.rs1, ic.imm12_i);
+            break;
         //case I_lh:
         //case I_lhu:
         case I_lui:
             breg[ic.rd] = ic.imm20_u;
+            break;
         case I_sb:
             sb(ic.rs1, ic.imm12_s, ic.rs2);
+            break;
         //case I_sh:
         case I_sw:
             sw(ic.rs1, ic.imm12_s, ic.rs2);
+            break;
         case I_sll:
             breg[ic.rd] = breg[ic.rs1] << breg[ic.rs2];
+            break;
         case I_slt:
             breg[ic.rd] = breg[ic.rs1] < breg[ic.rs2];
+            break;
         case I_slli:
             breg[ic.rd] = breg[ic.rs1] << ic.shamt;
+            break;
         case I_srl:
             breg[ic.rd] = breg[ic.rs1] >> (uint32_t)breg[ic.rs2];
+            break;
         case I_sra:
             breg[ic.rd] = breg[ic.rs1] >> breg[ic.rs2];
+            break;
         case I_sub:
             breg[ic.rd] = breg[ic.rs1] - breg[ic.rs2];
+            break;
         case I_slti:
             breg[ic.rd] = breg[ic.rs1] < ic.imm12_i;
+            break;
         case I_sltiu:
             breg[ic.rd] = (uint32_t)breg[ic.rs1] < (uint32_t)ic.imm12_i;
+            break;
         case I_xor:
             breg[ic.rd] = breg[ic.rs1] ^ breg[ic.rs2];
+            break;
         case I_or:
             breg[ic.rd] = breg[ic.rs1] | breg[ic.rs2];
+            break;
         case I_srli:
             breg[ic.rd] = breg[ic.rs1] >> (uint32_t)ic.shamt;
+            break;
         case I_srai:
             breg[ic.rd] = breg[ic.rs1] >> ic.shamt;
+            break;
         case I_sltu:
             breg[ic.rd] = (uint32_t)breg[ic.rs1] < (uint32_t)breg[ic.rs2];
+            break;
         case I_ori:
             breg[ic.rd] = breg[ic.rs1] | ic.imm12_i;
+            break;
         case I_ecall:
             switch (breg[A7]) {
                 case 1:
                     std::cout << (breg[A0]);
+                    break;
                 case 4:
-                    data = reinterpret_cast<const char *>(breg[A0]);
-                    sstream(data);
-                    concat_string = "";
-                    while(sstream.good()) {
-                        std::bitset<8> bits;
-                        sstream >> bits;
-                        char c = char(bits.to_ulong());
-                        concat_string += c;
-                    }
-                    std::cout << concat_string;
+                    int32_t *ptr;
+                    ptr = &mem[breg[A0]/4];
+                    printf("%s", ptr);
+                    break;
                 case 10:
                     exit_call = true;
+                    break;
             }
         case I_xori:
             breg[ic.rd] = breg[ic.rs1] ^ ic.imm12_i;
@@ -301,11 +337,35 @@ void run() {
 
 void dump_mem(int start_byte, int end_byte, char format) {
 
-    std::string mem_output;
+    switch (format) {
+        case 'h':
+            for (int i = start_byte/4; i < end_byte/4; ++i) {
+                printf("%x",mem[i]);
+            }
+            break;
+        case 'd':
+            for (int i = start_byte/4; i < end_byte/4; ++i) {
+                printf("%i",mem[i]);
+            }
+            break;
+    }
 
 }
 
 void dump_reg(char format) {
+
+    switch (format) {
+        case 'h':
+            for (int i = 0; i < 32; ++i) {
+                printf("%x",breg[i]);
+            }
+            break;
+        case 'd':
+            for (int i = 0; i < 32; ++i) {
+                printf("%i",breg[i]);
+            }
+            break;
+    }
 
 }
 
