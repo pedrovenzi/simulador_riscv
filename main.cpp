@@ -1,8 +1,11 @@
 #include <iostream>
 #include <cstdio>
 #include <cstdint>
+#include <sstream>
+#include <bitset>
 #include "globals.h"
 #include "riscv.h"
+#include "infix_iterator.h"
 
 int32_t mem[MEM_SIZE]; //4096 palavras (de 32-bits), 16384 bytes (de 8-bits)
 
@@ -11,6 +14,9 @@ int32_t lb(uint32_t address, int32_t kte);
 int32_t lbu(uint32_t address, int32_t kte);
 void sw(uint32_t address, int32_t kte, int32_t dado);
 void sb(uint32_t address, int32_t kte, int8_t dado);
+
+std::string concat_string, data;
+std::stringstream sstream(data);
 
 void init() {
 
@@ -190,7 +196,7 @@ void execute (instruction_context_st& ic) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bgeu:
-            if (breg[ic.rs1] >= (uint32_t)breg[ic.rs2]) {
+            if ((uint32_t)breg[ic.rs1] >= (uint32_t)breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_blt:
@@ -198,7 +204,7 @@ void execute (instruction_context_st& ic) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bltu:
-            if (breg[ic.rs1] <= (uint32_t)breg[ic.rs2]) {
+            if ((uint32_t)breg[ic.rs1] <= (uint32_t)breg[ic.rs2]) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_bne:
@@ -206,32 +212,31 @@ void execute (instruction_context_st& ic) {
                 breg[ic.rd] = ic.pc + ic.imm13;
             }
         case I_jal:
-            breg[rd] = pc+4;
-            pc += sext(offset);
+            breg[ic.rd] = ic.pc+4;
+            ic.pc += ic.imm21;
         case I_jalr:
-            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;//
+            temp_pc = ic.pc+4;
+            ic.pc = (breg[ic.rs1] + ic.imm21);
+            breg[ic.rd]=temp_pc;
         case I_lb:
-            t =pc+4; pc=(breg[rs1]+sext(offset))&∼1; breg[rd]=t;//
+            breg[ic.rd] = lb(ic.rs1, ic.imm12_i);
         case I_lbu:
-            breg[rd] = M[breg[rs1] + sext(offset)][7:0];//
+            breg[ic.rd] = lbu(ic.rs1, ic.imm12_i);
         case I_lw:
-            breg[rd] = sext(M[breg[rs1] + sext(offset)][31:0]);//
-        case I_lh:
-            breg[rd] = sext(M[breg[rs1] + sext(offset)][15:0]);//
-        case I_lhu:
-            breg[rd] = M[breg[rs1] + sext(offset)][15:0];//
+            breg[ic.rd] = lw(ic.rs1, ic.imm12_i);
+        //case I_lh:
+        //case I_lhu:
         case I_lui:
             breg[ic.rd] = ic.imm20_u;
         case I_sb:
-            M[breg[rs1] + sext(offset)] = breg[rs2][7:0];//
-        case I_sh:
-            M[breg[rs1] + sext(offset)] = breg[rs2][15:0];//
+            sb(ic.rs1, ic.imm12_s, ic.rs2);
+        //case I_sh:
         case I_sw:
-            M[breg[rs1] + sext(offset)] = breg[rs2][31:0];//
+            sw(ic.rs1, ic.imm12_s, ic.rs2);
         case I_sll:
-            breg[rd] = breg[rs1] << breg[rs2];//
+            breg[ic.rd] = breg[ic.rs1] << breg[ic.rs2];
         case I_slt:
-            breg[rd] = breg[rs1] <s breg[rs2];//
+            breg[ic.rd] = breg[ic.rs1] < breg[ic.rs2];
         case I_slli:
             breg[ic.rd] = breg[ic.rs1] << ic.shamt;
         case I_srl:
@@ -241,9 +246,9 @@ void execute (instruction_context_st& ic) {
         case I_sub:
             breg[ic.rd] = breg[ic.rs1] - breg[ic.rs2];
         case I_slti:
-            breg[ic.rd] = breg[ic.rs1] << ic.imm12_s;//
+            breg[ic.rd] = breg[ic.rs1] < ic.imm12_i;
         case I_sltiu:
-            breg[ic.rd] = breg[ic.rs1] << (uint32_t)ic.imm12_s;//
+            breg[ic.rd] = (uint32_t)breg[ic.rs1] < (uint32_t)ic.imm12_i;
         case I_xor:
             breg[ic.rd] = breg[ic.rs1] ^ breg[ic.rs2];
         case I_or:
@@ -253,13 +258,29 @@ void execute (instruction_context_st& ic) {
         case I_srai:
             breg[ic.rd] = breg[ic.rs1] >> ic.shamt;
         case I_sltu:
-            breg[ic.rd] = breg[ic.rs1] << (uint32_t)breg[ic.rs2];//
+            breg[ic.rd] = (uint32_t)breg[ic.rs1] < (uint32_t)breg[ic.rs2];
         case I_ori:
             breg[ic.rd] = breg[ic.rs1] | ic.imm12_i;
         case I_ecall:
-            RaiseException(EnvironmentCall);//
+            switch (breg[A7]) {
+                case 1:
+                    std::cout << (breg[A0]);
+                case 4:
+                    data = reinterpret_cast<const char *>(breg[A0]);
+                    sstream(data);
+                    concat_string = "";
+                    while(sstream.good()) {
+                        std::bitset<8> bits;
+                        sstream >> bits;
+                        char c = char(bits.to_ulong());
+                        concat_string += c;
+                    }
+                    std::cout << concat_string;
+                case 10:
+                    exit_call = true;
+            }
         case I_xori:
-            breg[ic.rd] = breg[ic.rs1] ^ ic.imm12_i;//
+            breg[ic.rd] = breg[ic.rs1] ^ ic.imm12_i;
         //case I_nop:
     }
 }
@@ -271,10 +292,16 @@ void step(instruction_context_st& ic) {
 }
 
 void run() {
+    exit_call = false;
 
+    while((pc < DATA_SEGMENT_START) | !exit_call) {
+        step(gic);
+    }
 }
 
 void dump_mem(int start_byte, int end_byte, char format) {
+
+    std::string mem_output;
 
 }
 

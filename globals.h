@@ -100,16 +100,20 @@ const WORD_SIZE_E WSIZE = WORD_SIZE;
 extern
 int32_t breg[32];
 
+extern bool exit_call;
+
+
 extern
 uint32_t pc,						// contador de programa
          ri,						// registrador de intrucao
          sp,						// stack pointe4r
-         gp;						// global pointer
+         gp,						// global pointer
+         temp_pc;
 
 extern
-int32_t		imm12_i,				// constante 12 bits - S
-            imm12_s,				// constante 12 bits - SB
-            imm13,					// constante 13 bits
+int32_t		imm12_i,				// constante 12 bits - I
+            imm12_s,				// constante 12 bits - S
+            imm13,					// constante 13 bits - SB
             imm20_u,				// constante 20 bis mais significativos - U
             imm21;					// constante 21 bits - UJ
 
