@@ -17,16 +17,28 @@ void sb(uint32_t address, int32_t kte, int8_t dado);
 
 void init() {
 
-    //FILE* file_bin = fopen("./code.bin", "rb");
-    //fseek(file_bin,0,SEEK_END);
-    //unsigned long size=ftell(file_bin);
-    //fseek(file_bin,0,SEEK_SET);
+    int32_t code = 0x0;
+    FILE* file_code = fopen("./code.bin", "rb");
+    fseek(file_code,0,SEEK_END);
+    unsigned long file_code_size=ftell(file_code);
+    fseek(file_code,0,SEEK_SET);
+    for (size_t i = 0; i < file_code_size; i += 4) {
+        fread((char*)&code, sizeof(code), 1, file_code);
+        mem[i/4] = code;
+    }
+    fclose(file_code);
 
+    int32_t data = 0x0;
+    FILE* file_data = fopen("./code.bin", "rb");
+    fseek(file_data,0,SEEK_END);
+    unsigned long file_data_size=ftell(file_data);
+    fseek(file_data,0,SEEK_SET);
+    for (size_t i = DATA_SEGMENT_START; i < DATA_SEGMENT_START + file_data_size; i += 4) {
+        fread((char*)&data, sizeof(data), 1, file_data);
+        mem[i/4] = data;
+    }
 
-    //fclose(file_bin)
-
-
-
+    fclose(file_data);
 }
 
 INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
@@ -339,12 +351,12 @@ void dump_mem(int start_byte, int end_byte, char format) {
 
     switch (format) {
         case 'h':
-            for (int i = start_byte/4; i < end_byte/4; ++i) {
+            for (int i = start_byte; i < end_byte; i+=4) {
                 printf("%x",mem[i]);
             }
             break;
         case 'd':
-            for (int i = start_byte/4; i < end_byte/4; ++i) {
+            for (int i = start_byte; i < end_byte; i+=4) {
                 printf("%i",mem[i]);
             }
             break;
