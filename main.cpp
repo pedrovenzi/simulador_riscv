@@ -14,11 +14,20 @@ int32_t lbu(uint32_t address, int32_t kte);
 void sw(uint32_t address, int32_t kte, int32_t dado);
 void sb(uint32_t address, int32_t kte, int8_t dado);
 
+bool exit_call = false;
+uint32_t temp_pc;
 
-void init() {
+int main() {
+
+    const char * file_code_name = "./code.bin";
+    const char * file_data_name = "./data.bin";
 
     int32_t code = 0x0;
-    FILE* file_code = fopen("./code.bin", "rb");
+    FILE* file_code = fopen(file_code_name, "r");
+    /*if (!file_code) {
+        printf("Falha ao carregar arquivo de codigo");
+        return 1;
+    }*/
     fseek(file_code,0,SEEK_END);
     unsigned long file_code_size=ftell(file_code);
     fseek(file_code,0,SEEK_SET);
@@ -29,7 +38,11 @@ void init() {
     fclose(file_code);
 
     int32_t data = 0x0;
-    FILE* file_data = fopen("./code.bin", "rb");
+    FILE* file_data = fopen(file_data_name, "rb");
+    if (!file_code) {
+        printf("Falha ao carregar arquivo de dados");
+        return 1;
+    }
     fseek(file_data,0,SEEK_END);
     unsigned long file_data_size=ftell(file_data);
     fseek(file_data,0,SEEK_SET);
@@ -39,8 +52,13 @@ void init() {
     }
 
     fclose(file_data);
+
+    //run();
+
+    return 0;
 }
 
+/*
 INSTRUCTIONS get_instr_code(uint32_t opcode, uint32_t func3, uint32_t func7) {
     switch (opcode) {
         case RegType:
@@ -180,7 +198,7 @@ void decode (instruction_context_st& ic) {
     imm21 = set_field(imm21, 1, 0x3FF, tmp);
     imm21 = imm21 & ~1;					// zero bit 0
     ic.ins_code = get_instr_code(opcode, funct3, funct7);
-    ic.ins_format = get_i_format(opcode, funct3, funct7);
+    //ic.ins_format = get_i_format(opcode, funct3, funct7);
     ic.rs1 = (REGISTERS)rs1;
     ic.rs2 = (REGISTERS)rs2;
     ic.rd = (REGISTERS)rd;
@@ -473,3 +491,4 @@ void sb(uint32_t address, int32_t kte, int8_t dado) {
 
     mem[mem_index] = written_value;
 };
+*/

@@ -85,9 +85,6 @@
 		<Unit filename="/home/pedrovenzi/Documentos/oac/simulador_riscv/globals.h">
 			<Option target="clion"/>
 		</Unit>
-		<Unit filename="/home/pedrovenzi/Documentos/oac/simulador_riscv/infix_iterator.h">
-			<Option target="clion"/>
-		</Unit>
 		<Unit filename="/home/pedrovenzi/Documentos/oac/simulador_riscv/main.cpp">
 			<Option target="clion"/>
 		</Unit>
